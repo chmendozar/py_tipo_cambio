@@ -7,6 +7,7 @@ from modulos.bot_02_calcular_tc import bot_run as Bot_02_CalcularTC
 from modulos.bot_03_super_admin import bot_run as Bot_03_SuperAdmin
 from modulos.bot_04_modulo_tc import bot_run as Bot_04_ModuloTC
 from modulos.bot_05_tc_sbs import bot_run as Bot_05_TC_SBS
+#from modulos.bot_06_tc_paypal import bot_run as Bot_06_TC_Paypal
 from utilidades.notificaiones_whook import WebhookNotifier
 
 from datetime import datetime
@@ -77,7 +78,7 @@ def main():
             ("Bot 02 - Calcular TC", Bot_02_CalcularTC),
             ("Bot 03 - Super Admin", Bot_03_SuperAdmin),
             ("Bot 04 - Modulo TC", Bot_04_ModuloTC),
-            ("Bot 05 - Tipo cambio sbs", Bot_05_TC_SBS)
+            #("Bot 05 - Tipo cambio sbs", Bot_05_TC_SBS),
         ]:
             logger.info(f"==================== INICIANDO {bot_name} ====================")
             resultado, mensaje = bot_function(cfg)
@@ -86,18 +87,19 @@ def main():
                 logger.info(f"{bot_name} completado exitosamente: {mensaje}")
                 if bot_name == "Bot 03 - Super Admin":
                     notificaion.send_notification(
-                        "Se registró tipo de cambio ModuloTC\n"
-                        f"TC Bloomberg: {vg.tipo_cambio_bloomberg}\n"
-                        f"TC Compra: {vg.tipo_cambio_compra}\n"
-                        f"TC Venta: {vg.tipo_cambio_venta}"
-                    )             
-                if bot_name == "Bot 04 - Registrar TC paypal":
+                        f"Se registró tipo de cambio PayPal. Brecha: {cfg['valores']['brecha']} - "
+                        f"TC Bloomberg: {vg.tipo_cambio_bloomberg} - "
+                        f"TC Venta: {vg.tipo_cambio_venta} - "
+                        f"TC Compra: {vg.tipo_cambio_compra}"
+                    )  
+                if bot_name == "Bot 04 - Registrar TC":
                     notificaion.send_notification(
                         "Se registró tipo de cambio ModuloTC\n"
                         f"TC Bloomberg: {vg.tipo_cambio_bloomberg}\n"
                         f"TC Compra: {vg.tipo_cambio_compra}\n"
                         f"TC Venta: {vg.tipo_cambio_venta}"
-                    )
+                    )   
+                    
             else:
                 logger.error(f"{bot_name} falló: {mensaje}")
                 return

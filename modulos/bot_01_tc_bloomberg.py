@@ -9,26 +9,6 @@ import re
 
 logger = logging.getLogger("Bot 01 - Tipo cambio bloomberg")
 
-def is_valid_exchange_rate(text):
-    """
-    Valida si el texto parece ser un tipo de cambio válido.
-    """
-    if not text or not isinstance(text, str):
-        return False
-    
-    # Limpiar el texto de caracteres no deseados
-    cleaned_text = re.sub(r'[^\d.]', '', text)
-    
-    # Verificar que tenga el formato correcto (número decimal con máximo 2 decimales)
-    if not re.match(r'^\d+\.\d{1,2}$', cleaned_text):
-        return False
-    
-    # Verificar que el valor esté en un rango razonable (entre 1 y 10)
-    try:
-        value = float(cleaned_text)
-        return 1.0 <= value <= 10.0
-    except ValueError:
-        return False
 
 def extrer_tipo_cambio_bloomberg(cfg):
     """
@@ -43,8 +23,7 @@ def extrer_tipo_cambio_bloomberg(cfg):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
-            "Accept-Encoding": "gzip, deflate, br",  # Asegurar que aceptamos compresión
+            "Accept-Language": "en-US,en;q=0.9,es;q=0.8",  # Asegurar que aceptamos compresión
             "DNT": "1",
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
@@ -133,17 +112,8 @@ def extrer_tipo_cambio_bloomberg(cfg):
             tree = html.fromstring(content)
             # Intentar varios selectores XPath más específicos para Bloomberg
             xpath_selectors = [
-                "//div[contains(@class, 'priceText')]",
-                "//span[contains(@class, 'priceText')]",
-                "//div[contains(@class, 'value')]",
-                "//span[contains(@class, 'value')]",
-                "//div[contains(@class, 'price')]",
-                "//span[contains(@class, 'price')]",
-                "//*[contains(@class, 'price')]",
-                "//div[contains(text(), '.') and contains(text(), 'USD')]",
-                "//span[contains(text(), '.') and contains(text(), 'USD')]",
-                "//div[contains(text(), '.')]",  # Buscar números con punto decimal
-                "//span[contains(text(), '.')]"
+                "//main//*[@data-component='sized-price']",
+                
             ]
             
             for selector in xpath_selectors:
@@ -151,10 +121,9 @@ def extrer_tipo_cambio_bloomberg(cfg):
                 if elementos:
                     for elemento in elementos:
                         texto = elemento.text_content().strip()
-                        if texto and '.' in texto and is_valid_exchange_rate(texto):
-                            tipo_cambio = texto
-                            logger.info(f"Tipo de cambio obtenido con XPath ({selector}): {tipo_cambio}")
-                            return tipo_cambio
+                        tipo_cambio = texto
+                        logger.info(f"Tipo de cambio obtenido con XPath ({selector}): {tipo_cambio}")
+                        return tipo_cambio
         except Exception as xpath_error:
             logger.warning(f"Error al usar XPath: {xpath_error}, intentando con BeautifulSoup...")
         

@@ -4,9 +4,9 @@ import requests
 from utilidades.excepciones import BusinessException
 import variables_globales as vg
 
-logger = logging.getLogger("Bot 04 - Modulo tc")
+logger = logging.getLogger("Bot 04 - Registrar TC")
 
-def bot_run(cfg, mensaje="Bot 04 - Modulo tc"):
+def bot_run(cfg, mensaje="Bot 04 - Registrar TC"):
     resultado = False
     try:
         # Leer configuración
