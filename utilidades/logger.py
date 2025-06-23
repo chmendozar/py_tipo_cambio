@@ -1,7 +1,8 @@
 import logging
+import sys
 from pathlib import Path
 
-def init_logger(ruta_log="..logs.log", nivel=logging.INFO):
+def init_logger(nivel=logging.INFO):
     # Crear el logger
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
@@ -9,24 +10,24 @@ def init_logger(ruta_log="..logs.log", nivel=logging.INFO):
     # Evitar agregar múltiples handlers
     if not logger.hasHandlers():
 
-        # Crear un handler para el archivo de log
-        file_handler = logging.FileHandler(ruta_log, encoding="utf-8")
-        file_handler.setLevel(nivel)  # Nivel detallado para el archivo
-
-        # Crear un handler para la consola
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
+        # Crear un handler para stdout (INFO y DEBUG)
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setLevel(logging.DEBUG)
+        
+        # Crear un handler para stderr (WARNING, ERROR, CRITICAL)
+        stderr_handler = logging.StreamHandler(sys.stderr)
+        stderr_handler.setLevel(logging.WARNING)
 
         # Formateador de logs
         formatter = logging.Formatter(
             fmt="%(asctime)s [%(name)s] [%(levelname)s] -> %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S"
         )
-        file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
+        stdout_handler.setFormatter(formatter)
+        stderr_handler.setFormatter(formatter)
 
         # Agregar handlers al logger
-        logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
+        logger.addHandler(stdout_handler)
+        logger.addHandler(stderr_handler)
 
     return logger

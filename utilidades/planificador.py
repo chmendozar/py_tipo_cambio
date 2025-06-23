@@ -28,7 +28,7 @@ class Planificador:
             cfg = cargar_configuracion()
 
             # Inicializar logger
-            init_logger(ruta_log=cfg["archivos"]["archivos_log"], nivel=logging.INFO)
+            init_logger(nivel=logging.INFO)
             logger.info("Inicio del proceso ...")
 
             # Inicializar el planificador

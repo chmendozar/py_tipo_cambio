@@ -12,10 +12,6 @@ def bot_run():
         # Funcion para cargar el archivo de configuración
         cfg = cargar_configuracion()
 
-        # Se crea la carpeta de logs si no existe
-        if not Path(cfg["rutas"]["ruta_log"]).exists():
-            Path(cfg["rutas"]["ruta_log"]).mkdir(parents=True)
-
         # Se crea la carpeta de input si no existe
         if not Path(cfg["rutas"]["ruta_input"]).exists():
             Path(cfg["rutas"]["ruta_input"]).mkdir(parents=True)
@@ -25,16 +21,13 @@ def bot_run():
             Path(cfg["rutas"]["ruta_output"]).mkdir(parents=True)
 
         # Inicializar logger
-        init_logger(ruta_log=cfg["archivos"]["archivos_log"], nivel=logging.INFO)
+        init_logger(nivel=logging.INFO)
         logger.info("Inicio del proceso ...")
 
         # Imprimir configuracion
         logger.info(f"Configuracion cargada")
-        logger.info(f"Ruta de logs: {cfg['rutas']['ruta_log']}")
         logger.info(f"Ruta de input: {cfg['rutas']['ruta_input']}")
         logger.info(f"Ruta de output: {cfg['rutas']['ruta_output']}")
-
-        logger.info(f"Achivo de logs: {cfg['archivos']['archivos_log']}")
 
         return cfg
     
