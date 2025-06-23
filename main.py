@@ -6,6 +6,7 @@ from modulos.bot_01_tc_bloomberg import bot_run as Bot_01_Bloomberg
 from modulos.bot_02_calcular_tc import bot_run as Bot_02_CalcularTC
 from modulos.bot_03_super_admin import bot_run as Bot_03_SuperAdmin
 from modulos.bot_04_modulo_tc import bot_run as Bot_04_ModuloTC
+from modulos.bot_05_tc_sbs import bot_run as Bot_05_TC_SBS
 from utilidades.notificaiones_whook import WebhookNotifier
 
 from datetime import datetime
@@ -75,7 +76,8 @@ def main():
             ("Bot 01 - Obtener TC bloomberg", Bot_01_Bloomberg),   
             ("Bot 02 - Calcular TC", Bot_02_CalcularTC),
             ("Bot 03 - Super Admin", Bot_03_SuperAdmin),
-            ("Bot 04 - Modulo TC", Bot_04_ModuloTC)
+            ("Bot 04 - Modulo TC", Bot_04_ModuloTC),
+            ("Bot 05 - Tipo cambio sbs", Bot_05_TC_SBS)
         ]:
             logger.info(f"==================== INICIANDO {bot_name} ====================")
             resultado, mensaje = bot_function(cfg)
