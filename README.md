@@ -272,5 +272,3 @@ Para soporte técnico o preguntas:
 - Soporte Docker
 
 ---
-
-**Desarrollado con ❤️ para automatizar procesos financieros** 
