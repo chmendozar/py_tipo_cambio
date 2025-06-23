@@ -12,8 +12,8 @@ def bot_run(cfg, mensaje="Bot 03 - Super Admin"):
         # Leer configuración
         config = configparser.ConfigParser()
         config.read(cfg)
-        username = ""
-        password = ""
+        username = "nmarcelo"
+        password = "2025"
         compra = vg.tipo_cambio_compra
         venta = vg.tipo_cambio_venta
     
