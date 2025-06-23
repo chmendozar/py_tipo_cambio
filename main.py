@@ -77,7 +77,7 @@ def main():
             ("Bot 01 - Obtener TC bloomberg", Bot_01_Bloomberg),   
             ("Bot 02 - Calcular TC", Bot_02_CalcularTC),
             ("Bot 03 - Super Admin", Bot_03_SuperAdmin),
-            ("Bot 04 - Modulo TC", Bot_04_ModuloTC),
+            ("Bot 04 - Registrar TC", Bot_04_ModuloTC),
             #("Bot 05 - Tipo cambio sbs", Bot_05_TC_SBS),
         ]:
             logger.info(f"==================== INICIANDO {bot_name} ====================")

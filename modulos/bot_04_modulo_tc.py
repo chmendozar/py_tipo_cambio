@@ -14,8 +14,8 @@ def bot_run(cfg, mensaje="Bot 04 - Registrar TC"):
         config.read(cfg)
         username = "dcelis"
         password = "U2FsdGVkX198pE6U0Hw/wJgC7vKhQwXbOmPUrylyeZI="
-        # Leer URLs desde el archivo de configuración
-       
+        
+        # Leer URLs desde el archivo de configuración       
         login_url = f"{cfg['api'] ['api_modulo_login']}"        
         exchange_rate_save_url = f"{cfg['api'] ['api_modulo_tc_add']}"
         exchange_rate_get_url = f"{cfg['api'] ['api_modulo_tc_get']}"
@@ -72,7 +72,6 @@ def bot_run(cfg, mensaje="Bot 04 - Registrar TC"):
                 raise BusinessException(f"Inicio de sesión fallido. Mensaje: {login_result.get('mensaje')}")
         else:
             raise BusinessException(f"Error en la solicitud de inicio de sesión: {login_response.status_code}")
-
     except BusinessException as be:
         logger.error(f"Error de negocio en bot_run: {be}")
         mensaje = f"Error de negocio: {be}"
