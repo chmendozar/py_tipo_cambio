@@ -19,6 +19,7 @@ def extrer_tipo_cambio_bloomberg(cfg):
     http_client = get_http_client()
     try:
         url = cfg["fuentes_tc"]["url_bloomberg"]
+
         # Usar un User-Agent menos común para evitar detección de actividad inusual
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
