@@ -1,4 +1,8 @@
 import logging
+import traceback
+import platform
+import os
+import psutil
 import variables_globales as vg
 from utilidades.limpieza import cerrarProcesos as Limpieza
 from modulos.bot_00_configuracion import bot_run as Bot_00_Configuracion
@@ -9,15 +13,10 @@ from modulos.bot_04_modulo_tc import bot_run as Bot_04_ModuloTC
 from modulos.bot_05_tc_sbs import bot_run as Bot_05_TC_SBS
 #from modulos.bot_06_tc_paypal import bot_run as Bot_06_TC_Paypal
 from utilidades.notificaiones_whook import WebhookNotifier
-
 from datetime import datetime
-import traceback
-import platform
-import os
-import psutil
+
 
 logger = logging.getLogger("Main - Orquestador")
-
 
 def obtener_info_sistema():
     """
@@ -55,6 +54,7 @@ def main():
     # Recopilar información del sistema
     info_sistema = obtener_info_sistema()
     logger.info(f"Información del sistema: {info_sistema}")
+    notificaion = WebhookNotifier(cfg["webhooks"]["webhook_url"])
 
     try:
         # Configuración del bot
@@ -66,9 +66,7 @@ def main():
             return
 
         logger.info(f"Configuración cargada exitosamente. Secciones disponibles: {', '.join(cfg.keys())}")
-
-        notificaion = WebhookNotifier(cfg["webhooks"]["webhook_url"])
-
+        
         # Notificación de inicio
         #notificaion.send_notification("Inicio del proceso tipo de cambio PayPal")
 
@@ -116,6 +114,10 @@ def main():
     except Exception as e:
         logger.error(f"Error en main: {e}")
         logger.error(traceback.format_exc())
+        notificaion = WebhookNotifier(cfg["webhooks"]["webhook_exception"])
+        notificaion.send_notification(
+            f"Error: {traceback.extract_tb(e.__traceback__)[-1].filename}: {str(e)}"
+        )
 
     finally:
         # Calcular tiempo total de ejecución
