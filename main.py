@@ -54,16 +54,18 @@ def main():
     # Recopilar información del sistema
     info_sistema = obtener_info_sistema()
     logger.info(f"Información del sistema: {info_sistema}")
-    notificaion = WebhookNotifier(cfg["webhooks"]["webhook_url"])
+    cfg = Bot_00_Configuracion()
+    if not cfg:
+        logger.error("Error al cargar la configuración. Abortando proceso.")
+        vg.system_exception = True
+        return
 
     try:
         # Configuración del bot
         logger.info("Cargando configuración del sistema...")
-        cfg = Bot_00_Configuracion()
-        if not cfg:
-            logger.error("Error al cargar la configuración. Abortando proceso.")
-            vg.system_exception = True
-            return
+       
+
+        notificaion = WebhookNotifier(cfg["webhooks"]["webhook_url"])
 
         logger.info(f"Configuración cargada exitosamente. Secciones disponibles: {', '.join(cfg.keys())}")
         
