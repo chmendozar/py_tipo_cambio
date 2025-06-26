@@ -78,8 +78,8 @@ def main():
             ("Bot 02 - Calcular TC", Bot_02_CalcularTC),
             ("Bot 03 - Super Admin", Bot_03_SuperAdmin),
             ("Bot 04 - Registrar TC", Bot_04_ModuloTC),
-            #("Bot 05 - Tipo cambio sbs", Bot_05_TC_SBS),
-            #("Bot 06 - Gescom Cargar TC", Bot_06_Gescom_Cargar_TC),
+            ("Bot 05 - Tipo cambio sbs", Bot_05_TC_SBS),
+            ("Bot 06 - Gescom Cargar TC", Bot_06_Gescom_Cargar_TC),
         ]:
             logger.info(f"==================== INICIANDO {bot_name} ====================")
             resultado, mensaje = bot_function(cfg)

@@ -21,7 +21,7 @@ def cargar_tc_gescom(cfg):
         
         logger.info(f"Enviando request a Gescom con payload: {payload}")
         
-        response = requests.post(url, data=payload)
+        response = requests.post(url, json=payload)
         response.raise_for_status()
         
         if response.status_code == 200:

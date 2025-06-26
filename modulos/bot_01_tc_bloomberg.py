@@ -36,16 +36,20 @@ def extrer_tipo_cambio_bloomberg(cfg):
         max_retries = 3
         retry_count = 0
         
+        proxy = {
+            'http': 'http://a3da2aa31a50a4775a4758b9a880c924-1dc7a13991739a83.elb.us-east-1.amazonaws.com:3128'
+        }
+        
         while retry_count < max_retries:
-            response = http_client.make_request(url)
-            if response is not None and response.status_code != 403:
+            response = requests.get(url, headers=headers, proxies=proxy)
+            if response.status_code != 403:
                 break
             retry_count += 1
             if retry_count < max_retries:
                 logger.warning(f"Intento {retry_count} falló con código 403, reintentando...")
-        if response is None:
-            logger.error("No se pudo obtener respuesta de Bloomberg usando http_client")
-            raise BusinessException("No se pudo conectar con Bloomberg (http_client)")
+        if response.status_code == 403:
+            logger.error("No se pudo obtener respuesta de Bloomberg")
+            raise BusinessException("No se pudo conectar con Bloomberg")
 
         # Verificar que la respuesta sea válida
         if response.status_code != 200:
