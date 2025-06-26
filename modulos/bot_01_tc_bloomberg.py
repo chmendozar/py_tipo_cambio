@@ -1,6 +1,8 @@
 import logging
 from utilidades.excepciones import BusinessException
 import variables_globales as vg
+import subprocess
+import json
 import requests
 from bs4 import BeautifulSoup
 from lxml import html
@@ -16,95 +18,50 @@ def extrer_tipo_cambio_bloomberg(cfg):
     Utiliza el httpclient de utilidades para realizar la petición HTTP.
     """
     tipo_cambio = None
-    http_client = get_http_client()
     try:
         url = cfg["fuentes_tc"]["url_bloomberg"]
+        
+        i
 
-        # Usar un User-Agent menos común para evitar detección de actividad inusual
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9,es;q=0.8",  # Asegurar que aceptamos compresión
-            "DNT": "1",
-            "Connection": "keep-alive",
-            "Upgrade-Insecure-Requests": "1",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "none",
-            "Cache-Control": "max-age=0"
-        }
+        # Construir el comando curl con el proxy
+        curl_cmd = [
+            'curl',
+            '--proxy',
+            'http://a3da2aa31a50a4775a4758b9a880c924-1dc7a13991739a83.elb.us-east-1.amazonaws.com:3128',
+            '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            '-H', 'Accept-Language: en-US,en;q=0.9,es;q=0.8',
+            url
+        ]
+
+        logger.info(f"Ejecutando comando curl: {' '.join(curl_cmd)}")
+
+        # Ejecutar curl y capturar la salida
         max_retries = 3
         retry_count = 0
         
-        proxy = {
-            'http': 'http://a3da2aa31a50a4775a4758b9a880c924-1dc7a13991739a83.elb.us-east-1.amazonaws.com:3128'
-        }
-        
         while retry_count < max_retries:
-            response = requests.get(url, headers=headers, proxies=proxy)
-            if response.status_code != 403:
-                break
-            retry_count += 1
-            if retry_count < max_retries:
-                logger.warning(f"Intento {retry_count} falló con código 403, reintentando...")
-        if response.status_code == 403:
-            logger.error("No se pudo obtener respuesta de Bloomberg")
-            raise BusinessException("No se pudo conectar con Bloomberg")
-
-        # Verificar que la respuesta sea válida
-        if response.status_code != 200:
-            logger.error(f"Error HTTP {response.status_code} al acceder a Bloomberg")
-            raise BusinessException(f"Error HTTP {response.status_code} al acceder a Bloomberg")
-
-        # Verificar el tipo de contenido
-        content_type = response.headers.get('content-type', '').lower()
-        if 'text/html' not in content_type and 'application/json' not in content_type:
-            logger.warning(f"Tipo de contenido inesperado: {content_type}")
-
-        # Verificar si el contenido está comprimido
-        content_encoding = response.headers.get('content-encoding', '').lower()
-        logger.info(f"Content-Type: {content_type}")
-        logger.info(f"Content-Encoding: {content_encoding}")
-        logger.info(f"Content-Length: {len(response.content)} bytes")
-
-        # Intentar decodificar el contenido correctamente
-        try:
-            # Si el contenido está comprimido, requests debería descomprimirlo automáticamente
-            # pero vamos a verificar si hay problemas
-            if content_encoding:
-                logger.info(f"Contenido comprimido detectado: {content_encoding}")
-                # Intentar acceder al contenido descomprimido
-                if hasattr(response, 'text'):
-                    content = response.text
-                    logger.info("Usando response.text (descomprimido automáticamente)")
-                else:
-                    # Fallback: intentar decodificar manualmente
-                    content = response.content.decode('utf-8')
-                    logger.info("Usando response.content.decode() como fallback")
-            else:
-                # No está comprimido, usar response.text directamente
-                content = response.text
-                logger.info("Contenido no comprimido, usando response.text")
-                
-        except UnicodeDecodeError as e:
-            logger.warning(f"Error decodificando con response.text: {e}")
             try:
-                # Intentar decodificar como UTF-8 primero
-                content = response.content.decode('utf-8')
-                logger.info("Decodificación UTF-8 exitosa")
-            except UnicodeDecodeError:
-                try:
-                    # Si falla UTF-8, intentar con latin-1
-                    content = response.content.decode('latin-1')
-                    logger.info("Decodificación latin-1 exitosa")
-                except UnicodeDecodeError:
-                    logger.error("No se pudo decodificar el contenido de la respuesta")
-                    raise BusinessException("Error al decodificar el contenido de Bloomberg")
+                process = subprocess.Popen(curl_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = process.communicate()
+                
+                if process.returncode == 0:
+                    content = stdout.decode('utf-8')
+                    break
+                else:
+                    logger.warning(f"Intento {retry_count + 1} falló, error: {stderr.decode()}")
+                    retry_count += 1
+            except Exception as e:
+                logger.warning(f"Error en intento {retry_count + 1}: {str(e)}")
+                retry_count += 1
+
+        if retry_count == max_retries:
+            logger.error("No se pudo obtener respuesta de Bloomberg después de todos los intentos")
+            raise BusinessException("No se pudo conectar con Bloomberg")
 
         # Verificar que el contenido no esté corrupto o vacío
         if len(content) < 100:
             logger.error(f"El contenido de la respuesta es demasiado corto: {len(content)} caracteres")
-            logger.error(f"Primeros 200 caracteres: {repr(content[:200])}")
             raise BusinessException("Contenido insuficiente recibido de Bloomberg")
 
         # Verificar que el contenido tenga caracteres válidos
@@ -115,18 +72,13 @@ def extrer_tipo_cambio_bloomberg(cfg):
         # Verificar que el contenido parezca HTML válido
         if not ('<' in content and '>' in content):
             logger.error("El contenido no parece ser HTML válido")
-            logger.error(f"Primeros 500 caracteres: {repr(content[:500])}")
             raise BusinessException("Contenido no válido recibido de Bloomberg")
 
-        # Imprimir el contenido de la respuesta para depuración (solo los primeros 500 caracteres)
-        logger.debug(f"Contenido de la respuesta: {content[:500]}...")
-
-        # Método 1: Usando XPath con lxml de manera más flexible
+        # Método 1: Usando XPath con lxml
         try:
             tree = html.fromstring(content)
-            # Intentar varios selectores XPath más específicos para Bloomberg
             xpath_selectors = [
-                "//main//*[@data-component='sized-price']",                
+                "//main//*[@data-component='sized-price']",
             ]
             for selector in xpath_selectors:
                 elementos = tree.xpath(selector)
@@ -137,18 +89,15 @@ def extrer_tipo_cambio_bloomberg(cfg):
                         logger.info(f"Tipo de cambio obtenido con XPath ({selector}): {tipo_cambio}")
                         return tipo_cambio
         except Exception as xpath_error:
-            logger.warning(f"Error al usar XPath: {xpath_error}, intentando con BeautifulSoup...")
-        
+            logger.warning(f"Error al usar XPath: {xpath_error}")
             
     except BusinessException as be:
-        # Reenviar excepciones de negocio
         logger.error(f"Error de negocio: {be}")
         raise
     except Exception as e:
         logger.error(f"Error inesperado al extraer el tipo de cambio de Bloomberg: {e}")
         raise BusinessException(f"Error inesperado al extraer el tipo de cambio: {str(e)}")
     finally:
-        # Si llegamos aquí sin encontrar el tipo de cambio, será None
         return tipo_cambio
 
 def extraer_tipo_cambio_xe(cfg):
