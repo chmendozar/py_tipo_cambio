@@ -21,7 +21,7 @@ def extrer_tipo_cambio_bloomberg(cfg):
     try:
         url = cfg["fuentes_tc"]["url_bloomberg"]
         
-        i
+        
 
         # Construir el comando curl con el proxy
         curl_cmd = [
