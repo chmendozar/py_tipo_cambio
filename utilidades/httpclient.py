@@ -183,6 +183,11 @@ class AdvancedHTTPClient:
             proxies = {
                 'http': 'http://a3da2aa31a50a4775a4758b9a880c924-1dc7a13991739a83.elb.us-east-1.amazonaws.com:3128'
             }
+            # Obtener la IP desde la que se realiza la request
+            ip_check_response = self.session.get('https://api.ipify.org?format=json', proxies=proxies)
+            ip_address = ip_check_response.json()['ip']
+            logger.info(f"Realizando request desde IP: {ip_address}")
+            
             response = self.session.get(
                 url,
                 headers=request_headers,
@@ -190,7 +195,7 @@ class AdvancedHTTPClient:
                 verify=request_verify,
                 allow_redirects=allow_redirects,
                 stream=False,
-                proxies=proxies  # Para mejor manejo de memoria
+                proxies=proxies 
             )
             
             # Log de información de la respuesta

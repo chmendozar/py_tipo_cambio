@@ -33,7 +33,16 @@ def extrer_tipo_cambio_bloomberg(cfg):
             "Sec-Fetch-Site": "none",
             "Cache-Control": "max-age=0"
         }
-        response = http_client.make_request(url, headers=headers)
+        max_retries = 3
+        retry_count = 0
+        
+        while retry_count < max_retries:
+            response = http_client.make_request(url)
+            if response is not None and response.status_code != 403:
+                break
+            retry_count += 1
+            if retry_count < max_retries:
+                logger.warning(f"Intento {retry_count} falló con código 403, reintentando...")
         if response is None:
             logger.error("No se pudo obtener respuesta de Bloomberg usando http_client")
             raise BusinessException("No se pudo conectar con Bloomberg (http_client)")
@@ -200,8 +209,8 @@ def bot_run(cfg, mensaje="Bot 01 - Tipo cambio bloomberg"):
     resultado = False
     try:
         logger.info(f"Iniciando {mensaje}")
-        #tipo_cambio_str = extrer_tipo_cambio_bloomberg(cfg)
-        tipo_cambio_str = extraer_tipo_cambio_xe(cfg)
+        tipo_cambio_str = extrer_tipo_cambio_bloomberg(cfg)
+        #tipo_cambio_str = extraer_tipo_cambio_xe(cfg)
         if tipo_cambio_str:
             # Convertir a número si es necesario
             tipo_cambio_num = limpiar_tipo_cambio(tipo_cambio_str)
