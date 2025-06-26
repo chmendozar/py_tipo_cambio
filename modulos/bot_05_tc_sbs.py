@@ -147,19 +147,6 @@ def bot_run(cfg, mensaje="Bot 01 - Tipo cambio sbs"):
             vg.tipo_cambio_venta = tipo_cambio_venta_num
             vg.tipo_cambio_compra = tipo_cambio_compra_num
             resultado = True
-        elif tipo_cambio_venta:
-            tipo_cambio_venta_num = limpiar_tipo_cambio(tipo_cambio_venta)
-            logger.info(f"Solo se pudo obtener el tipo de cambio de venta: {tipo_cambio_venta_num}")
-            vg.tipo_cambio_sbs_venta = tipo_cambio_venta_num
-            resultado = True
-        elif tipo_cambio_compra:
-            tipo_cambio_compra_num = limpiar_tipo_cambio(tipo_cambio_compra)
-            logger.info(f"Solo se pudo obtener el tipo de cambio de compra: {tipo_cambio_compra_num}")
-            vg.tipo_cambio_sbs_compra = tipo_cambio_compra_num
-            resultado = True
-        else:
-            logger.warning("No se pudo obtener ningún tipo de cambio")
-            resultado = False
         
     except BusinessException as be:
         logger.error(f"Error de negocio en bot_run: {be}")

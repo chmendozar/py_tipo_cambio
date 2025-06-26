@@ -11,7 +11,7 @@ from modulos.bot_02_calcular_tc import bot_run as Bot_02_CalcularTC
 from modulos.bot_03_super_admin import bot_run as Bot_03_SuperAdmin
 from modulos.bot_04_modulo_tc import bot_run as Bot_04_ModuloTC
 from modulos.bot_05_tc_sbs import bot_run as Bot_05_TC_SBS
-#from modulos.bot_06_tc_paypal import bot_run as Bot_06_TC_Paypal
+from modulos.bot_06_gescom_cargar_tc import bot_run as Bot_06_Gescom_Cargar_TC
 from utilidades.notificaiones_whook import WebhookNotifier
 from datetime import datetime
 
@@ -79,6 +79,7 @@ def main():
             ("Bot 03 - Super Admin", Bot_03_SuperAdmin),
             ("Bot 04 - Registrar TC", Bot_04_ModuloTC),
             #("Bot 05 - Tipo cambio sbs", Bot_05_TC_SBS),
+            #("Bot 06 - Gescom Cargar TC", Bot_06_Gescom_Cargar_TC),
         ]:
             logger.info(f"==================== INICIANDO {bot_name} ====================")
             resultado, mensaje = bot_function(cfg)
