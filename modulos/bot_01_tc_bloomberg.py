@@ -113,10 +113,8 @@ def extrer_tipo_cambio_bloomberg(cfg):
             tree = html.fromstring(content)
             # Intentar varios selectores XPath más específicos para Bloomberg
             xpath_selectors = [
-                "//main//*[@data-component='sized-price']",
-                
+                "//main//*[@data-component='sized-price']",                
             ]
-            
             for selector in xpath_selectors:
                 elementos = tree.xpath(selector)
                 if elementos:
@@ -128,30 +126,6 @@ def extrer_tipo_cambio_bloomberg(cfg):
         except Exception as xpath_error:
             logger.warning(f"Error al usar XPath: {xpath_error}, intentando con BeautifulSoup...")
         
-        # Método 2: BeautifulSoup con búsqueda más exhaustiva
-        soup = BeautifulSoup(content, "html.parser")
-        
-        # Buscar cualquier elemento que pueda contener el precio
-        posibles_elementos = soup.find_all(['div', 'span', 'p'], 
-            class_=lambda x: x and ('price' in x.lower() or 'value' in x.lower()))
-        
-        for elemento in posibles_elementos:
-            texto = elemento.text.strip()
-            if texto and '.' in texto and is_valid_exchange_rate(texto):
-                tipo_cambio = texto
-                logger.info(f"Tipo de cambio obtenido con BeautifulSoup: {tipo_cambio}")
-                return tipo_cambio
-        
-        # Si aún no encontramos nada, buscar cualquier texto que parezca un precio válido
-        for elemento in soup.find_all(text=True):
-            texto = elemento.strip()
-            if texto and '.' in texto and is_valid_exchange_rate(texto):
-                tipo_cambio = texto
-                logger.info(f"Tipo de cambio obtenido por búsqueda de texto: {tipo_cambio}")
-                return tipo_cambio
-            
-        # Si llegamos aquí, ningún método funcionó
-        raise BusinessException("No se encontró el tipo de cambio en la página de Bloomberg con ningún método")
             
     except BusinessException as be:
         # Reenviar excepciones de negocio
@@ -162,6 +136,48 @@ def extrer_tipo_cambio_bloomberg(cfg):
         raise BusinessException(f"Error inesperado al extraer el tipo de cambio: {str(e)}")
     finally:
         # Si llegamos aquí sin encontrar el tipo de cambio, será None
+        return tipo_cambio
+
+def extraer_tipo_cambio_xe(cfg):
+    """
+    Función para extraer el tipo de cambio de xe.com utilizando XPath y BeautifulSoup como fallback.
+    Utiliza el httpclient de utilidades para realizar la petición HTTP.
+    """
+    tipo_cambio = None
+    http_client = get_http_client()
+    
+    try:
+        url = cfg["fuentes_tc"]["url_xe_com"]
+        response = http_client.make_request(url)
+        if response is None:
+            logger.error("No se pudo obtener respuesta de xe.com usando http_client")
+            raise BusinessException("No se pudo conectar con xe.com (http_client)")
+        
+        if response.status_code != 200:
+            logger.error(f"Error HTTP {response.status_code} al acceder a xe.com")
+            raise BusinessException(f"Error HTTP {response.status_code} al acceder a xe.com")
+        
+        soup = BeautifulSoup(response.text, "html.parser")
+        conversion_div = soup.find('div', {'data-testid': 'conversion'})
+
+        # Dentro de ese div, el segundo <p> contiene el valor, lo separamos del texto extra
+        if conversion_div:
+            p_tags = conversion_div.find_all('p')
+            if len(p_tags) >= 2:
+                raw_text = p_tags[1].text
+                # Limpiar: Extraemos solo el número antes de "Peruvian Soles"
+                tipo_cambio = raw_text.split('Peruvian')[0].strip()
+                print(f"Tipo de cambio USD a PEN: {tipo_cambio}")
+            else:
+                print("No se encontró el segundo <p> esperado.")
+        else:
+            print("No se encontró el valor, probablemente requiere JavaScript.")
+            
+    except BusinessException as be:
+        logger.error(f"Error de negocio: {be}")
+    except Exception as e:
+        logger.error(f"Error inesperado al extraer el tipo de cambio de xe.com: {e}")
+    finally:
         return tipo_cambio
 
 def limpiar_tipo_cambio(tipo_cambio_str):
@@ -184,8 +200,8 @@ def bot_run(cfg, mensaje="Bot 01 - Tipo cambio bloomberg"):
     resultado = False
     try:
         logger.info(f"Iniciando {mensaje}")
-        tipo_cambio_str = extrer_tipo_cambio_bloomberg(cfg)
-        
+        #tipo_cambio_str = extrer_tipo_cambio_bloomberg(cfg)
+        tipo_cambio_str = extraer_tipo_cambio_xe(cfg)
         if tipo_cambio_str:
             # Convertir a número si es necesario
             tipo_cambio_num = limpiar_tipo_cambio(tipo_cambio_str)
