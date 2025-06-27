@@ -50,10 +50,6 @@ def extrer_tipo_cambio_bloomberg(cfg):
             logger.error(f"Error al ejecutar curl: {stderr.decode()}")
             raise BusinessException("Error al conectar con Bloomberg")
 
-        if retry_count == max_retries:
-            logger.error("No se pudo obtener respuesta de Bloomberg después de todos los intentos")
-            raise BusinessException("No se pudo conectar con Bloomberg")
-
         # Verificar que el contenido no esté corrupto o vacío
         if len(content) < 100:
             logger.error(f"El contenido de la respuesta es demasiado corto: {len(content)} caracteres")
