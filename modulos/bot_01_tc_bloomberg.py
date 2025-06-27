@@ -21,9 +21,6 @@ def extrer_tipo_cambio_bloomberg(cfg):
     try:
         url = cfg["fuentes_tc"]["url_bloomberg"]
         
-        
-
-        # Construir el comando curl con el proxy
         curl_cmd = [
             'curl',
             '--proxy',
@@ -31,29 +28,27 @@ def extrer_tipo_cambio_bloomberg(cfg):
             '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
             '-H', 'Accept-Language: en-US,en;q=0.9,es;q=0.8',
+            '-H', 'DNT: 1',
+            '-H', 'Connection: keep-alive',
+            '-H', 'Upgrade-Insecure-Requests: 1',
+            '-H', 'Sec-Fetch-Dest: document',
+            '-H', 'Sec-Fetch-Mode: navigate', 
+            '-H', 'Sec-Fetch-Site: none',
+            '-H', 'Cache-Control: max-age=0',
             url
         ]
 
         logger.info(f"Ejecutando comando curl: {' '.join(curl_cmd)}")
 
         # Ejecutar curl y capturar la salida
-        max_retries = 3
-        retry_count = 0
+        process = subprocess.Popen(curl_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
         
-        while retry_count < max_retries:
-            try:
-                process = subprocess.Popen(curl_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                stdout, stderr = process.communicate()
-                
-                if process.returncode == 0:
-                    content = stdout.decode('utf-8')
-                    break
-                else:
-                    logger.warning(f"Intento {retry_count + 1} falló, error: {stderr.decode()}")
-                    retry_count += 1
-            except Exception as e:
-                logger.warning(f"Error en intento {retry_count + 1}: {str(e)}")
-                retry_count += 1
+        if process.returncode == 0:
+            content = stdout.decode('utf-8')
+        else:
+            logger.error(f"Error al ejecutar curl: {stderr.decode()}")
+            raise BusinessException("Error al conectar con Bloomberg")
 
         if retry_count == max_retries:
             logger.error("No se pudo obtener respuesta de Bloomberg después de todos los intentos")
@@ -162,16 +157,31 @@ def bot_run(cfg, mensaje="Bot 01 - Tipo cambio bloomberg"):
     resultado = False
     try:
         logger.info(f"Iniciando {mensaje}")
-        tipo_cambio_str = extrer_tipo_cambio_bloomberg(cfg)
-        #tipo_cambio_str = extraer_tipo_cambio_xe(cfg)
+        # Intentar obtener el tipo de cambio con reintentos
+        max_intentos = 3
+        intento = 1
+        tipo_cambio_str = None
+        
+        while intento <= max_intentos and not tipo_cambio_str:
+            logger.info(f"Intento {intento} de {max_intentos} para obtener tipo de cambio")
+            tipo_cambio_str = extrer_tipo_cambio_bloomberg(cfg)
+            if not tipo_cambio_str:
+                logger.warning(f"Intento {intento} fallido, reintentando...")
+                intento += 1
+        
+        if not tipo_cambio_str:
+            logger.error(f"No se pudo obtener el tipo de cambio de Bloomberg después de {max_intentos} intentos")
+            logger.info("Intentando obtener tipo de cambio desde xe.com...")
+            tipo_cambio_str = extraer_tipo_cambio_xe(cfg)
+
         if tipo_cambio_str:
             # Convertir a número si es necesario
             tipo_cambio_num = limpiar_tipo_cambio(tipo_cambio_str)
-            logger.info(f"Tipo de cambio de Bloomberg extraído con éxito: {tipo_cambio_num}")
+            logger.info(f"Tipo de cambio extraído con éxito: {tipo_cambio_num}")
             vg.tipo_cambio_bloomberg = tipo_cambio_num
             resultado = True
         else:
-            logger.warning("No se pudo obtener el tipo de cambio")
+            logger.warning("No se pudo obtener el tipo de cambio de ninguna fuente")
             resultado = False
         
     except BusinessException as be:
