@@ -100,10 +100,17 @@ def main():
                         f"TC Compra: {vg.tipo_cambio_compra}\n"
                         f"TC Venta: {vg.tipo_cambio_venta}"
                     )   
-                    
             else:
                 logger.error(f"{bot_name} falló: {mensaje}")
-                return
+                # Si falla el Bot 01, saltamos los bots 02, 03 y 04
+                if bot_name == "Bot 01 - Obtener TC bloomberg":
+                    # Continuamos con el Bot 05
+                    continue_from_bot = "Bot 05 - Tipo cambio sbs"
+                    if bot_function.__name__ != continue_from_bot:
+                        if any(bot in bot_function.__name__ for bot in ["Bot 02", "Bot 03", "Bot 04"]):
+                            continue
+                else:
+                    return
         
         # Verificar si hay excepciones de negocio o sistema
         if vg.business_exception:
