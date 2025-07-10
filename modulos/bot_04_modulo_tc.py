@@ -12,8 +12,8 @@ def bot_run(cfg, mensaje="Bot 04 - Registrar TC"):
         # Leer configuración
         config = configparser.ConfigParser()
         config.read(cfg)
-        username = "dcelis"
-        password = "U2FsdGVkX198pE6U0Hw/wJgC7vKhQwXbOmPUrylyeZI="
+        username = cfg["env_vars"]["modulo_user"]
+        password = cfg["env_vars"]["modulo_pwd"]
         
         # Leer URLs desde el archivo de configuración       
         login_url = f"{cfg['api'] ['api_modulo_login']}"        

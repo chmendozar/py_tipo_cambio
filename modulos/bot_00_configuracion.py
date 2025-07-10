@@ -2,15 +2,34 @@ import logging
 from pathlib import Path
 from config.config import cargar_configuracion
 from utilidades.logger import init_logger
-
+from dotenv import load_dotenv
+import os
 # Configuracion del logger
 logger = logging.getLogger("Bot 00 - Configurador")
+
+load_dotenv()
 
 def bot_run():
 
     try:
         # Funcion para cargar el archivo de configuración
         cfg = cargar_configuracion()
+        # Cargar variables sensibles desde .env si existen
+        
+        # Sobrescribir credenciales en la configuración si están en .env
+        # SUPER ADMIN
+        env_path = Path('.env')
+        if not env_path.exists():
+            logger.error("No se encontró el archivo .env")
+            raise Exception("No se encontró el archivo .env")
+        # Agregar env_vars desde .env al cfg
+        if env_path.exists():
+            cfg["env_vars"] = {
+                "super_admin_user": os.getenv("SUPER_ADMIN_USER"),
+                "super_admin_pwd": os.getenv("SUPER_ADMIN_PWD"),
+                "modulo_user": os.getenv("MODULO_USER"),
+                "modulo_pwd": os.getenv("MODULO_PWD"),
+            }
 
         # Se crea la carpeta de input si no existe
         if not Path(cfg["rutas"]["ruta_input"]).exists():
