@@ -44,7 +44,7 @@ def bot_run():
         logger.info("Inicio del proceso ...")
 
         # Imprimir configuracion
-        logger.info(f"Configuracion cargada")
+        logger.info("Configuracion cargada")
         logger.info(f"Ruta de input: {cfg['rutas']['ruta_input']}")
         logger.info(f"Ruta de output: {cfg['rutas']['ruta_output']}")
 

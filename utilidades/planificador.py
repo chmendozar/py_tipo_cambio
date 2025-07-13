@@ -1,5 +1,3 @@
-import os
-import sys
 import time
 import logging
 from config.config import cargar_configuracion
