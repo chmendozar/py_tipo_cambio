@@ -2,12 +2,9 @@ import logging
 from utilidades.excepciones import BusinessException
 import variables_globales as vg
 import subprocess
-import json
-import requests
 from bs4 import BeautifulSoup
 from lxml import html
 from utilidades.httpclient import get_http_client
-import re
 
 logger = logging.getLogger("Bot 01 - Tipo cambio bloomberg")
 

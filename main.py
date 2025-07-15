@@ -48,7 +48,7 @@ def main():
     lista_procesos = ["chrome.exe", "firefox.exe"]
     Limpieza(lista_procesos)
 
-    logger.info(f"==================== INICIO DE ORQUESTACIÓN ====================")
+    logger.info("==================== INICIO DE ORQUESTACIÓN ====================")
     logger.info(f"Inicio de orquestación - {inicio.strftime('%Y-%m-%d %H:%M:%S')}")
 
     # Recopilar información del sistema
@@ -133,7 +133,7 @@ def main():
         # Calcular tiempo total de ejecución
         fin = datetime.now()
         tiempo_total = fin - inicio
-        logger.info(f"==================== FIN DE ORQUESTACIÓN ====================")
+        logger.info("==================== FIN DE ORQUESTACIÓN ====================")
         logger.info(f"Fin de orquestación - {fin.strftime('%Y-%m-%d %H:%M:%S')}")
         logger.info(f"Tiempo total de ejecución: {tiempo_total}")
         

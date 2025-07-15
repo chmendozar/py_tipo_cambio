@@ -1,6 +1,5 @@
 import logging
 import sys
-from pathlib import Path
 
 def init_logger(nivel=logging.INFO):
     # Crear el logger

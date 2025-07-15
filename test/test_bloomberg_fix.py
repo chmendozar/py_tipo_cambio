@@ -7,11 +7,16 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from modulos.bot_01_tc_bloomberg import is_valid_exchange_rate, limpiar_tipo_cambio
+from modulos.bot_01_tc_bloomberg import is_valid_exchange_rate, limpiar_tipo_cambio, extrer_tipo_cambio_bloomberg
+from config.config import cargar_configuracion
 import logging
 
 # Configurar logging básico para las pruebas
 logging.basicConfig(level=logging.INFO)
+
+# Alias para get_config
+def get_config():
+    return cargar_configuracion()
 
 def test_is_valid_exchange_rate():
     """Prueba la función de validación de tipo de cambio."""

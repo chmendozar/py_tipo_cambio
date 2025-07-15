@@ -9,7 +9,7 @@ from urllib3.util.retry import Retry
 import random
 import time
 import logging
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 import urllib3
 from contextlib import contextmanager
 
